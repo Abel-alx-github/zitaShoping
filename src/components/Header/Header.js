@@ -1,12 +1,14 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import styles from './Header.module.scss';
 import { Link, NavLink, useNavigate } from 'react-router-dom'
-import { FaShoppingCart, FaTimes } from 'react-icons/fa';
+import { FaShoppingCart, FaTimes, FaUserCircle } from 'react-icons/fa';
 import { HiOutlineMenuAlt3 } from 'react-icons/hi';
 
 import { toast } from 'react-toastify';
 import {auth} from '../../firebaseConfig/firebaseConfig';
-import { signOut } from "firebase/auth";
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import { SET_ACTIVE_USER, SET_REMOVE_USER } from '../../redux/slice/authSlice';
+import { useDispatch } from 'react-redux';
 
 const logo = (
   <div className={styles.logo}>
@@ -33,7 +35,8 @@ const cart = (
 
 const Header = () => {
   const [showMenu, setShowMenu] = React.useState(false);
-
+  const [name, setName] = React.useState("")
+ 
   const toggleMenu = () => {
     setShowMenu(!showMenu)
   }
@@ -42,11 +45,42 @@ const Header = () => {
     setShowMenu(false)
   }
 
+  const dispatch = useDispatch()
+  useEffect(() => {
+    onAuthStateChanged(auth, User => {
+      if (User) {
+        if (!User.displayName) {
+          // create user name from email if not provided
+          const lastIdx = User.email.indexOf("@")
+          const nameFromEmail = User.email.substring(0, lastIdx)
+          const uName = nameFromEmail.charAt(0).toUpperCase() + nameFromEmail.slice(1)
+          setName(uName)
+        } else {
+          // take the first name
+          const userName = User.displayName.split(" ")[0]
+          const uName = userName.charAt(0).toUpperCase() + userName.slice(1)
+          setName(uName)
+        }
+
+        dispatch(SET_ACTIVE_USER({
+          email: User.email,
+          userID: User.uid,
+          userName: User.displayName ? User.displayName : name,
+
+        }))
+
+     } else {
+      dispatch(SET_REMOVE_USER()) 
+      setName("")
+     }
+  })
+  }, [])
+
   const navigate = useNavigate()
 
   const handleLogOut = () => {
     signOut(auth).then(() => {
-      toast.success("LogOut Successfully.")
+      toast.success("Logout Successfully.")
       navigate("/")
     })
     .catch(error => {
@@ -87,7 +121,14 @@ const Header = () => {
    
         <div className={styles["header-right"]} onClick={hideMenu}>
             <span className={styles.links}>
+              
               <NavLink to="/login" className={activeLink}>Login</NavLink>
+              
+                <a href="#">
+                   <FaUserCircle size={20} />
+                   Hi, { name }
+                </a>
+
               <NavLink to="/register" className={activeLink} >Resgister</NavLink>
               <NavLink to="/order-history" className={activeLink}>My orders</NavLink>
               <NavLink to="/logOut"  onClick={ handleLogOut}>Logout</NavLink>
