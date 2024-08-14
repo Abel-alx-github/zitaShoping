@@ -4,12 +4,12 @@ import {getFirestore} from 'firebase/firestore'
 import {getStorage} from 'firebase/storage'
 
 const firebaseConfig = {
-    apiKey: "apiKey",
-    authDomain: "react-zitashop.firebaseapp.com",
-    projectId: "projectId",
-    storageBucket: "storage",
-    messagingSenderId: "messaging",
-    appId: "appId"
+    apiKey: "I don't show in public here",
+    authDomain: "I don't show in public here",
+    projectId: "I don't show in public here",
+    storageBucket: "I don't show in public here",
+    messagingSenderId: "I don't show in public here",
+    appId: "I don't show in public here"
   };
   
 // Initialize Firebase
